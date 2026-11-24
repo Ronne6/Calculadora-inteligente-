@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111318">
+<meta name="description" content="Calculadora Inteligente de compras, com histórico e funcionamento offline.">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Calculadora Inteligente</title>
+<style>
+:root{color-scheme:dark;--bg:#0d0f14;--panel:#171a22;--panel2:#202431;--line:#2b3040;--text:#f3f5f8;--muted:#9ba3b4;--accent:#35d07f;--danger:#ff647c;--blue:#7ba7ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px system-ui,-apple-system,Segoe UI,sans-serif;padding:env(safe-area-inset-top) 16px calc(24px + env(safe-area-inset-bottom))}
+main{max-width:680px;margin:auto}.top{padding:24px 2px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{display:flex;gap:12px;align-items:center}.logo{width:46px;height:46px;border-radius:14px;background:#203b30;display:grid;place-items:center;color:var(--accent);font-size:25px}.eyebrow{font-size:11px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}.top h1{font-size:21px;margin:2px 0 0}.status{font-size:11px;color:var(--accent);border:1px solid #285b42;padding:6px 9px;border-radius:30px;white-space:nowrap}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:17px;margin:12px 0}.card h2{font-size:16px;margin:0 0 14px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}.field:last-child{margin-bottom:0}label{font-size:12px;color:var(--muted)}input,select{width:100%;border:1px solid var(--line);background:#10131a;color:var(--text);border-radius:11px;padding:13px;font:inherit;min-width:0;outline:none}input:focus,select:focus{border-color:var(--accent)}button{border:0;border-radius:12px;padding:13px 15px;font:600 14px system-ui;cursor:pointer}.primary{background:var(--accent);color:#07140d;width:100%;margin-top:12px}.secondary{background:var(--panel2);color:var(--text)}.voice{width:100%;background:#203b30;color:#9af0bd;margin:0 0 12px}.small{font-size:12px;color:var(--muted);line-height:1.45}.summary{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{background:var(--panel2);border-radius:13px;padding:13px}.metric span{display:block;color:var(--muted);font-size:11px}.metric strong{display:block;font-size:21px;margin-top:5px}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px}.toolbar h2{margin:0}.toolbar select{max-width:165px;padding:9px}.person{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);gap:12px}.person:last-child{border:0;padding-bottom:0}.person b{font-size:14px}.person small{display:block;color:var(--muted);margin-top:3px}.amount{font-weight:700;color:var(--accent);white-space:nowrap}.entry{padding:13px 0;border-bottom:1px solid var(--line)}.entry:last-child{border:0}.entryhead{display:flex;justify-content:space-between;gap:10px}.entry p{margin:5px 0 0;color:var(--muted);font-size:12px}.actions{display:flex;gap:7px;margin-top:9px}.actions button{font-size:11px;padding:7px 10px}.danger{color:#ff9baa;background:#3a2028}.empty{text-align:center;color:var(--muted);padding:18px 4px;font-size:13px}.notice{background:#172a22;border:1px solid #285b42;color:#b9f5d0;border-radius:12px;padding:11px;font-size:12px;line-height:1.45;margin-top:12px}.footer{text-align:center;color:#727b8d;font-size:11px;padding:18px 0}.hidden{display:none!important}@media(max-width:380px){.grid{grid-template-columns:1fr}.top h1{font-size:18px}}
+</style>
+</head>
+<body><main>
+<header class="top"><div class="brand"><div class="logo">⌗</div><div><div class="eyebrow">Controle de compras</div><h1>Calculadora Inteligente</h1></div></div><div class="status" id="netStatus">● Offline pronto</div></header>
+<section class="card">
+<h2 id="formTitle">Novo lançamento</h2>
+<button class="voice" id="voiceBtn">🎙️ Registrar por voz</button>
+<div class="small" id="voiceHelp">Exemplo: “João, arroz, 28 reais”. Se o reconhecimento de voz não estiver disponível, preencha os campos abaixo.</div>
+<div class="grid" style="margin-top:14px">
+<div class="field"><label for="person">Pessoa</label><input id="person" list="peopleList" placeholder="Ex.: João"><datalist id="peopleList"></datalist></div>
+<div class="field"><label for="amount">Valor (R$)</label><input id="amount" inputmode="decimal" placeholder="0,00"></div>
+</div>
+<div class="field"><label for="product">Produto / descrição</label><input id="product" placeholder="Ex.: arroz 5 kg"></div>
+<div class="field"><label for="store">Estabelecimento (opcional)</label><input id="store" placeholder="Ex.: Supermercado"></div>
+<button class="primary" id="saveBtn">Adicionar lançamento</button>
+<div class="small" id="editHint" style="margin-top:9px"></div>
+</section>
+<section class="card">
+<div class="toolbar"><h2>Resumo do período</h2><select id="monthFilter" aria-label="Filtrar mês"></select></div>
+<div class="summary" style="margin-top:13px"><div class="metric"><span>Total geral</span><strong id="grandTotal">R$ 0,00</strong></div><div class="metric"><span>Lançamentos</span><strong id="count">0</strong></div></div>
+<div id="peopleTotals" style="margin-top:10px"><div class="empty">Nenhum lançamento neste período.</div></div>
+</section>
+<section class="card">
+<div class="toolbar"><h2>Lançamentos</h2><button class="secondary" id="exportBtn">Exportar</button></div>
+<div id="entries"><div class="empty">Seus registros aparecerão aqui.</div></div>
+</section>
+<div class="notice">🔒 Seus dados ficam salvos neste aparelho. Quando estiver sem internet, você ainda poderá registrar e consultar compras. Faça uma exportação de tempos em tempos como cópia de segurança.</div>
+<div class="footer">Calculadora Inteligente • versão inicial 1.0</div>
+</main>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const KEY='calc-inteligente-v1';
+let records=[],editing=null;
+const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const monthKey=d=>{const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}`};
+const monthLabel=k=>{const [y,m]=k.split('-');return new Date(+y,+m-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'})};
+function load(){try{records=JSON.parse(localStorage.getItem(KEY)||'[]')}catch{records=[]}render()}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(records));return true}catch(e){alert('Não foi possível salvar neste aparelho. Verifique o espaço disponível.');return false}}
+function months(){let set=new Set(records.map(r=>monthKey(r.date)));set.add(monthKey(new Date()));return [...set].sort().reverse()}
+function render(){
+ const selected=$('monthFilter').value;const ms=months();
+ $('monthFilter').innerHTML=ms.map(m=>`<option value="${m}">${monthLabel(m)}</option>`).join('');
+ $('monthFilter').value=selected&&ms.includes(selected)?selected:ms[0];
+ const month=$('monthFilter').value;const list=records.filter(r=>monthKey(r.date)===month).sort((a,b)=>b.date-a.date);
+ const total=list.reduce((s,r)=>s+r.amount,0);
+ $('grandTotal').textContent=money(total);$('count').textContent=list.length;
+ const people={};list.forEach(r=>people[r.person]=(people[r.person]||0)+r.amount);
+ $('peopleTotals').innerHTML=Object.keys(people).length?Object.entries(people).sort((a,b)=>b[1]-a[1]).map(([p,v])=>`<div class="person"><div><b>${esc(p)}</b><small>${list.filter(r=>r.person===p).length} lançamento(s)</small></div><div class="amount">${money(v)}</div></div>`).join(''):'<div class="empty">Nenhum lançamento neste período.</div>';
+ $('entries').innerHTML=list.length?list.map(r=>`<div class="entry"><div class="entryhead"><div><b>${esc(r.product)}</b><p>${esc(r.person)}${r.store?' • '+esc(r.store):''} • ${new Date(r.date).toLocaleDateString('pt-BR')} às ${new Date(r.date).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</p></div><div class="amount">${money(r.amount)}</div></div><div class="actions"><button class="secondary" data-edit="${r.id}">Editar</button><button class="danger" data-del="${r.id}">Excluir</button></div></div>`).join(''):'<div class="empty">Nenhum lançamento neste período.</div>';
+ const names=[...new Set(records.map(r=>r.person))].sort();$('peopleList').innerHTML=names.map(n=>`<option value="${esc(n)}"></option>`).join('');
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function clearForm(){editing=null;$('person').value='';$('amount').value='';$('product').value='';$('store').value='';$('formTitle').textContent='Novo lançamento';$('saveBtn').textContent='Adicionar lançamento';$('editHint').textContent='';}
+$('saveBtn').onclick=()=>{
+ const person=$('person').value.trim(),product=$('product').value.trim();
+ const amount=Number($('amount').value.trim().replace(/\./g,'').replace(',','.'));
+ if(!person||!product||!Number.isFinite(amount)||amount<=0){alert('Informe pessoa, produto e um valor maior que zero.');return}
+ const item={id:editing||String(Date.now())+'-'+Math.random().toString(16).slice(2),person,product,amount,store:$('store').value.trim(),date:editing?records.find(r=>r.id===editing).date:Date.now()};
+ if(editing)records=records.map(r=>r.id===editing?item:r);else records.push(item);
+ if(persist()){clearForm();render()}
+};
+$('entries').onclick=e=>{
+ const edit=e.target.dataset.edit,del=e.target.dataset.del;
+ if(edit){const r=records.find(x=>x.id===edit);if(!r)return;editing=edit;$('person').value=r.person;$('product').value=r.product;$('amount').value=r.amount.toFixed(2).replace('.',',');$('store').value=r.store;$('formTitle').textContent='Editar lançamento';$('saveBtn').textContent='Salvar alterações';$('editHint').textContent='O lançamento original será atualizado.';window.scrollTo({top:0,behavior:'smooth'})}
+ if(del&&confirm('Excluir este lançamento?')){records=records.filter(r=>r.id!==del);persist();render()}
+};
+$('monthFilter').onchange=render;
+$('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(records,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='calculadora-inteligente-backup.json';a.click();URL.revokeObjectURL(url)};
+function parseVoice(text){
+ let s=text.toLowerCase().replace(/\b(reais|real|r\$)\b/g,' ').replace(/\s+/g,' ').trim();
+ const m=s.match(/(.+?)[,;]\s*(.+?)[,;]\s*(\d+(?:[.,]\d{1,2})?)/)||s.match(/^(.+?)\s+(?:comprou|compra|valor)\s+(.+?)\s+(\d+(?:[.,]\d{1,2})?)$/);
+ if(!m)return false;
+ $('person').value=m[1].trim().replace(/^para\s+/,'');$('product').value=m[2].trim();$('amount').value=m[3].replace('.',',');return true;
+}
+$('voiceBtn').onclick=()=>{
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){$('voiceHelp').textContent='O reconhecimento de voz não está disponível neste navegador. Use os campos de texto; eles funcionam offline.';return}
+ const rec=new SR();rec.lang='pt-BR';rec.interimResults=false;rec.maxAlternatives=1;
+ $('voiceHelp').textContent='Ouvindo… Diga: pessoa, produto, valor.';
+ rec.onresult=e=>{const said=e.results[0][0].transcript;if(parseVoice(said))$('voiceHelp').textContent='Entendi: '+said+'. Confira os campos e toque em Adicionar lançamento.';else $('voiceHelp').textContent='Não consegui separar pessoa, produto e valor. Tente “João, arroz, 28 reais” ou preencha manualmente.'};
+ rec.onerror=()=>{$('voiceHelp').textContent='Não foi possível reconhecer a fala. Verifique a permissão do microfone ou digite os dados.'};
+ rec.onend=()=>{};try{rec.start()}catch{$('voiceHelp').textContent='Não foi possível iniciar o microfone neste momento.'}
+};
+function net(){ $('netStatus').textContent=navigator.onLine?'● Online':'● Offline';$('netStatus').style.color=navigator.onLine?'var(--accent)':'#ffcf70'}
+window.addEventListener('online',net);window.addEventListener('offline',net);
+if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+net();load();
+})();
+</script></body></html>
